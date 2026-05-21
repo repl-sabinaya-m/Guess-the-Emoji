@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Guess the Emoji — Office Game Night</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;0,9..144,900;1,9..144,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{
+    --cream: #fdf6e3;
+    --paper: #fbf0d4;
+    --ink: #1a1d2e;
+    --coral: #ff6b54;
+    --mustard: #f4b942;
+    --mint: #4cb5a8;
+    --navy: #2a3950;
+    --plum: #6b4e8a;
+    --shadow: rgba(26,29,46,0.18);
+  }
+  html,body{height:100%;}
+  body{
+    font-family: 'Manrope', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(255,107,84,0.12) 0%, transparent 28%),
+      radial-gradient(circle at 88% 82%, rgba(76,181,168,0.12) 0%, transparent 32%),
+      radial-gradient(circle at 50% 50%, rgba(244,185,66,0.06) 0%, transparent 50%);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before{
+    content:"";
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.04 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    pointer-events:none; opacity:.7; z-index:0;
+  }
+
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 32px 28px 80px; position: relative; z-index:1;}
+
+  /* HERO */
+  header.hero{
+    text-align:center;
+    padding: 24px 0 12px;
+    position: relative;
+  }
+  .badge{
+    display:inline-block;
+    background: var(--ink); color: var(--mustard);
+    padding: 6px 16px; border-radius: 100px;
+    font-weight: 700; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    margin-bottom: 18px;
+    box-shadow: 4px 4px 0 var(--coral);
+  }
+  h1.title{
+    font-family: 'Fraunces', serif;
+    font-weight: 900; font-size: clamp(42px, 6vw, 72px);
+    line-height: 1.02; letter-spacing: -0.03em;
+    color: var(--ink);
+  }
+  h1.title .em{ font-style: italic; color: var(--coral); font-variation-settings: "SOFT" 100; }
+  h1.title .emoji{ display: inline-block; transform: translateY(-4px); margin: 0 6px;}
+  .sub{
+    font-size: 17px; color: var(--navy); opacity: .75;
+    margin-top: 14px; max-width: 620px; margin-inline:auto;
+  }
+
+  /* TABS */
+  .tabs{
+    display:flex; flex-wrap: wrap; gap: 10px;
+    justify-content:center;
+    margin: 36px 0 28px;
+    border-bottom: 2px dashed rgba(26,29,46,0.18);
+    padding-bottom: 24px;
+  }
+  .tab{
+    background: transparent;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    padding: 10px 22px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700; font-size: 14px;
+    color: var(--ink); cursor: pointer;
+    transition: all .18s ease;
+    letter-spacing: 0.02em;
+  }
+  .tab:hover{ transform: translateY(-2px); }
+  .tab.active{
+    background: var(--ink); color: var(--mustard);
+    box-shadow: 4px 4px 0 var(--coral);
+  }
+
+  /* PANELS */
+  .panel{ display:none; animation: fadeIn .35s ease; }
+  .panel.active{ display:block; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  /* CARDS */
+  .card{
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 6px 6px 0 var(--ink);
+    margin-bottom: 24px;
+  }
+  .card h2{
+    font-family: 'Fraunces', serif; font-weight: 800;
+    font-size: 28px; margin-bottom: 12px; letter-spacing: -0.01em;
+  }
+  .card .lead{ color: var(--navy); opacity: .8; margin-bottom: 20px; font-size: 15px; }
+
+  /* SETUP */
+  .setup-row{ display:flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 20px;}
+  label{ display:block; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--navy); margin-bottom: 8px;}
+  input[type="number"], input[type="text"]{
+    font-family: 'Manrope', sans-serif;
+    font-size: 16px; font-weight: 600;
+    border: 2px solid var(--ink);
+    background: var(--cream);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--ink);
+    outline: none;
+    transition: box-shadow .15s ease, transform .15s ease;
+  }
+  input:focus{ box-shadow: 3px 3px 0 var(--coral); transform: translate(-1px,-1px); }
+  input[type="number"]{ width: 100px; }
+  input[type="text"]{ width: 100%; }
+
+  .names-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin: 18px 0 6px;
+  }
+  .name-field{
+    background: var(--cream);
+    border: 1.5px dashed var(--navy);
+    border-radius: 12px;
+    padding: 10px 12px;
+    display:flex; align-items:center; gap: 10px;
+  }
+  .name-num{
+    width: 28px; height: 28px;
+    background: var(--ink); color: var(--mustard);
+    border-radius: 50%;
+    display:flex; align-items:center; justify-content:center;
+    font-weight: 800; font-size: 13px; flex-shrink:0;
+  }
+  .name-field input{ border:none; background: transparent; padding: 6px 0; font-size: 15px;}
+  .name-field input:focus{ box-shadow:none; transform:none;}
+
+  .btn{
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800; letter-spacing: 0.02em;
+    padding: 14px 28px;
+    border-radius: 12px;
+    border: 2px solid var(--ink);
+    cursor: pointer;
+    font-size: 15px;
+    transition: all .15s ease;
+    background: var(--mustard);
+    color: var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .btn:hover{ transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--ink); }
+  .btn:active{ transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+  .btn.primary{ background: var(--coral); color: white; }
+  .btn.ghost{ background: transparent; box-shadow:none; }
+  .btn.ghost:hover{ background: var(--ink); color: var(--mustard);}
+  .btn.small{ padding: 8px 14px; font-size: 13px; border-radius: 8px; box-shadow: 2px 2px 0 var(--ink); }
+
+  /* PLAY VIEW */
+  .play-grid{
+    display:grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+  }
+  @media(max-width: 900px){ .play-grid{ grid-template-columns: 1fr; } }
+
+  .puzzle-stage{
+    background: var(--ink);
+    border-radius: 22px;
+    padding: 40px 32px;
+    color: var(--cream);
+    text-align:center;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--coral);
+  }
+  .puzzle-stage::before{
+    content:""; position:absolute; inset:0;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(244,185,66,0.18) 0%, transparent 25%),
+      radial-gradient(circle at 80% 70%, rgba(255,107,84,0.18) 0%, transparent 25%);
+    pointer-events:none;
+  }
+  .pl-tag{
+    display:inline-flex; align-items:center; gap: 8px;
+    background: var(--mustard); color: var(--ink);
+    padding: 6px 14px; border-radius: 100px;
+    font-weight: 800; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+    position: relative;
+  }
+  .qcount{
+    font-size: 13px; color: var(--mustard); opacity: 0.8;
+    margin-top: 10px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700;
+    position: relative;
+  }
+  .puzzle-cat{
+    font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--mint); font-weight: 700; margin-top: 18px; position: relative;
+  }
+  .puzzle-emoji{
+    font-size: clamp(64px, 9vw, 110px);
+    line-height: 1.15;
+    margin: 22px 0 18px;
+    letter-spacing: 0.04em;
+    position: relative;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.25));
+  }
+  .puzzle-answer, .puzzle-hint{
+    display:none;
+    background: rgba(253,246,227,0.08);
+    border: 1.5px dashed rgba(253,246,227,0.3);
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin: 12px auto;
+    max-width: 480px;
+    font-size: 17px;
+    color: var(--mustard);
+    position: relative;
+  }
+  .puzzle-answer.show, .puzzle-hint.show{ display:block; }
+  .puzzle-hint{ color: var(--mint); }
+  .puzzle-answer strong{ color: var(--cream); font-family: 'Fraunces', serif; font-size: 22px; display:block; margin-top:4px; font-weight: 800;}
+  .stage-controls{
+    display:flex; gap: 10px; justify-content:center; flex-wrap:wrap;
+    margin-top: 24px; position: relative;
+  }
+  .stage-controls .btn{ background: var(--mustard); }
+  .stage-controls .btn.skip{ background: transparent; color: var(--cream); border-color: var(--cream); box-shadow: none;}
+  .stage-controls .btn.skip:hover{ background: var(--cream); color: var(--ink);}
+
+  .nav-puzzles{
+    display:flex; justify-content: space-between; align-items: center;
+    margin-top: 20px; position: relative;
+  }
+  .nav-puzzles .btn{ background: var(--cream); color: var(--ink); }
+
+  /* SCOREBOARD */
+  .scoreboard h3{
+    font-family: 'Fraunces', serif; font-weight: 800; font-size: 22px;
+    margin-bottom: 14px; display:flex; align-items:center; justify-content: space-between;
+  }
+  .score-row{
+    display:flex; align-items:center; gap: 10px;
+    background: var(--cream);
+    border: 2px solid var(--ink);
+    padding: 10px 12px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+  }
+  .score-row.leader{ background: var(--mustard); }
+  .score-row .who{ flex:1; font-weight: 700; font-size: 15px; }
+  .score-row .who small{ display:block; font-weight: 500; font-size: 11px; color: var(--navy); opacity: .65; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px;}
+  .score-row .pts{ font-family: 'Fraunces', serif; font-weight: 800; font-size: 22px; min-width: 36px; text-align: center;}
+  .pmbtn{
+    min-width: 42px; height: 36px;
+    padding: 0 8px;
+    border-radius: 10px;
+    border: 2px solid var(--ink);
+    background: var(--cream); cursor: pointer;
+    font-weight: 800; font-size: 14px;
+    display:flex; align-items:center; justify-content:center;
+    transition: transform .12s ease;
+    font-family: 'Manrope', sans-serif;
+  }
+  .pmbtn:hover{ transform: scale(1.1); }
+  .pmbtn.plus{ background: var(--mint); color: white; }
+  .pmbtn.hint{ background: var(--plum); color: white; }
+  .pmbtn.partial{ background: var(--mustard); color: var(--ink); }
+  .pmbtn.minus{ background: var(--coral); color: white; }
+
+  .assignments{
+    margin-top: 18px;
+    background: var(--cream);
+    border: 1.5px dashed var(--navy);
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 13px;
+  }
+  .assignments h4{ font-size: 12px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--navy); margin-bottom: 10px; opacity: 0.8;}
+  .assignments .pl-row{ display:flex; gap: 8px; align-items: center; padding: 4px 0; }
+  .assignments .pl-row .pl-name{ flex: 1; font-weight: 700;}
+  .assignments .pl-row .pl-qs{ color: var(--coral); font-weight: 700; font-family: 'Fraunces'; }
+
+  /* TABLES (Puzzle Bank, Rules, Scoring) */
+  table{
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 8px;
+    background: var(--cream);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid var(--ink);
+  }
+  th, td{ padding: 14px 14px; text-align: left; border-bottom: 1.5px solid rgba(26,29,46,0.12);}
+  th{
+    background: var(--ink); color: var(--mustard);
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    font-weight: 700;
+  }
+  tr:last-child td{ border-bottom: none; }
+  tr:nth-child(even) td{ background: rgba(244,185,66,0.06); }
+  td.emoji-cell{ font-size: 28px; min-width: 130px; letter-spacing: 0.06em; }
+  td.cat-cell{
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    font-weight: 700; color: var(--coral); white-space: nowrap;
+  }
+  td.ans-cell{ font-weight: 700; font-family: 'Fraunces', serif; font-size: 17px;}
+  td.hint-cell{ color: var(--navy); opacity: 0.85; font-size: 14px; font-style: italic;}
+
+  .reveal-toggle{
+    color: var(--navy); cursor: pointer; font-weight: 600;
+    text-decoration: underline; text-underline-offset: 3px;
+  }
+  .hidden-ans{ color: var(--navy); opacity: 0.3; user-select: none;}
+  .hidden-ans.revealed{ color: var(--ink); opacity: 1; }
+
+  /* RULES */
+  .rule-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+    margin-top: 8px;
+  }
+  .rule-item{
+    background: var(--cream);
+    border: 2px solid var(--ink);
+    border-radius: 14px;
+    padding: 18px;
+    position: relative;
+  }
+  .rule-item .num{
+    position: absolute; top: -14px; left: 16px;
+    background: var(--coral); color: white;
+    width: 32px; height: 32px; border-radius: 50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family: 'Fraunces', serif; font-weight: 800; font-size: 16px;
+    border: 2px solid var(--ink);
+  }
+  .rule-item h4{ font-family: 'Fraunces', serif; font-size: 18px; font-weight: 800; margin: 6px 0 8px;}
+  .rule-item p{ font-size: 14px; color: var(--navy); line-height: 1.55; }
+
+  /* SCORING PILLS */
+  .pill-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .pill{
+    background: var(--ink); color: var(--cream);
+    border-radius: 14px; padding: 16px;
+    text-align: center;
+  }
+  .pill .val{
+    font-family: 'Fraunces', serif; font-weight: 900;
+    font-size: 38px; color: var(--mustard);
+    display:block;
+  }
+  .pill .lbl{ font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; color: var(--mint); margin-top: 4px;}
+  .pill .dsc{ font-size: 13px; margin-top: 6px; opacity: 0.85;}
+
+  .empty-state{ text-align: center; padding: 50px 20px; color: var(--navy); opacity: 0.7; font-size: 15px; }
+  .empty-state .big{ font-size: 48px; margin-bottom: 12px; }
+
+  /* FOOTER */
+  footer{
+    text-align: center;
+    color: var(--navy); opacity: 0.55;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    margin-top: 40px;
+  }
+
+  /* PRINT STYLES — for hosts who want a paper copy */
+  @media print{
+    .tabs, .btn, .stage-controls, .nav-puzzles { display:none !important; }
+    .panel { display: block !important; page-break-after: always;}
+    body{ background:white; }
+    .card{ box-shadow:none; border-color: #333; }
+    .hidden-ans{ opacity: 1 !important; color: var(--ink) !important;}
+  }
+
+  /* TIMER */
+  .timer-wrap{
+    position: absolute;
+    top: 22px; right: 22px;
+    width: 78px; height: 78px;
+    z-index: 2;
+  }
+  .timer-ring{
+    width: 100%; height: 100%;
+    transform: rotate(-90deg);
+  }
+  .timer-track{ fill: none; stroke: rgba(253,246,227,0.15); stroke-width: 7; }
+  .timer-progress{
+    fill: none;
+    stroke: var(--mint);
+    stroke-width: 7;
+    stroke-linecap: round;
+    stroke-dasharray: 220;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+  }
+  .timer-progress.warn{ stroke: var(--mustard); }
+  .timer-progress.danger{ stroke: var(--coral); }
+  .timer-num{
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 26px;
+    color: var(--cream);
+  }
+  .timer-num.danger{ color: var(--coral); animation: pulse 0.6s ease infinite; }
+  @keyframes pulse{ 0%,100%{transform:scale(1);} 50%{transform:scale(1.12);} }
+  .timer-controls{
+    display: flex; gap: 6px; justify-content: center;
+    margin-top: 10px; position: relative;
+  }
+  .timer-controls button{
+    background: transparent;
+    border: 1.5px solid rgba(253,246,227,0.4);
+    color: var(--cream);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Manrope', sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .timer-controls button:hover{ background: rgba(253,246,227,0.1); border-color: var(--cream);}
+
+  /* Tie-breaker accent */
+  .tb-banner{
+    background: linear-gradient(135deg, var(--coral) 0%, var(--mustard) 100%);
+    color: var(--ink);
+    padding: 16px 20px;
+    border-radius: 14px;
+    border: 2px solid var(--ink);
+    margin-bottom: 16px;
+    display:flex; align-items:center; gap: 14px;
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .tb-banner .icon{ font-size: 32px; }
+  .tb-banner h3{ font-family: 'Fraunces', serif; font-weight: 800; font-size: 20px;}
+  .tb-banner p{ font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <header class="hero">
+    <h1 class="title">Guess the <span class="emoji">🤔</span><span class="em">Emoji</span></h1>
+  </header>
+
+  <!-- TABS -->
+  <nav class="tabs">
+    <button class="tab active" data-tab="setup">🎯 Setup</button>
+    <button class="tab" data-tab="play">🎮 Play</button>
+    <button class="tab" data-tab="bank">📋 Puzzle Bank</button>
+    <button class="tab" data-tab="tiebreak">⚡ Tie-Breakers</button>
+    <button class="tab" data-tab="rules">📜 Rules &amp; Scoring</button>
+  </nav>
+
+  <!-- SETUP PANEL -->
+  <section class="panel active" id="panel-setup">
+    <div class="card">
+      <h2>Set Up Your Players</h2>
+      <p class="lead">Enter how many people are joining (default 10), then fill in each name. Each player is randomly assigned five puzzles from the bank of 50 — with no repeats across the room (when 10 players or fewer).</p>
+
+      <div class="setup-row">
+        <div>
+          <label for="numPlayers">Number of Participants</label>
+          <input type="number" id="numPlayers" min="2" max="20" value="10" />
+        </div>
+        <button class="btn ghost small" id="fillDemo">Fill demo names</button>
+      </div>
+
+      <div class="names-grid" id="namesGrid"></div>
+
+      <div style="display:flex; gap: 12px; flex-wrap: wrap; margin-top: 18px;">
+        <button class="btn primary" id="startGame">🚀 Start Game</button>
+        <button class="btn ghost" id="reshuffle">🔀 Reshuffle Puzzles</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLAY PANEL -->
+  <section class="panel" id="panel-play">
+    <div id="playEmpty" class="card" style="text-align:center;">
+      <div class="empty-state">
+        <div class="big">🎬</div>
+        <p>Set up your players first, then come back here to start playing.</p>
+      </div>
+    </div>
+
+    <div id="playLive" style="display:none;">
+      <div class="play-grid">
+        <div>
+          <div class="puzzle-stage" id="stage">
+            <div class="timer-wrap">
+              <svg class="timer-ring" viewBox="0 0 80 80">
+                <circle class="timer-track" cx="40" cy="40" r="35"></circle>
+                <circle id="timerProgress" class="timer-progress" cx="40" cy="40" r="35"></circle>
+              </svg>
+              <div class="timer-num" id="timerNum">30</div>
+            </div>
+            <div class="pl-tag" id="currentPlayerTag">Player 1</div>
+            <div class="qcount" id="qCount">Question 1 of 3</div>
+            <div class="puzzle-cat" id="puzzleCat">Movies</div>
+            <div class="puzzle-emoji" id="puzzleEmoji">🎬</div>
+            <div class="puzzle-hint" id="puzzleHint"></div>
+            <div class="puzzle-answer" id="puzzleAnswer"></div>
+            <div class="stage-controls">
+              <button class="btn" id="btnHint">💡 Reveal Hint</button>
+              <button class="btn" id="btnAnswer">✅ Reveal Answer</button>
+            </div>
+            <div class="timer-controls">
+              <button id="btnStartTimer">▶ Start Timer</button>
+              <button id="btnPauseTimer">⏸ Pause</button>
+              <button id="btnResetTimer">↺ Reset</button>
+            </div>
+          </div>
+
+          <div class="nav-puzzles">
+            <button class="btn small" id="prevPuzzle">← Previous</button>
+            <button class="btn small primary" id="nextPuzzle">Next Puzzle →</button>
+          </div>
+        </div>
+
+        <div class="card scoreboard">
+          <h3>🏆 Scoreboard</h3>
+          <div id="scoreboardList"></div>
+
+          <div class="assignments" id="assignmentsBox">
+            <h4>Question Assignments</h4>
+            <div id="assignmentsList"></div>
+          </div>
+
+          <button class="btn ghost small" id="resetScores" style="margin-top: 12px; width: 100%;">↺ Reset Scores</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PUZZLE BANK -->
+  <section class="panel" id="panel-bank">
+    <div class="card">
+      <h2>All 50 Puzzles</h2>
+      <p class="lead">The full puzzle bank, organized by category. Click "show" to reveal an answer, or use <strong>Reveal All</strong> for a master cheat sheet.</p>
+      <div style="display:flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;">
+        <button class="btn small" id="revealAll">👁️ Reveal All</button>
+        <button class="btn small ghost" id="hideAll">🙈 Hide All</button>
+        <button class="btn small ghost" id="printBank">🖨️ Print View</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="bankTable">
+          <thead>
+            <tr><th>#</th><th>Emoji</th><th>Category</th><th>Answer</th><th>Hint</th></tr>
+          </thead>
+          <tbody id="bankBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIE-BREAKERS -->
+  <section class="panel" id="panel-tiebreak">
+    <div class="card">
+      <div class="tb-banner">
+        <div class="icon">⚡</div>
+        <div>
+          <h3>Tie-Breaker Round</h3>
+          <p>If two or more players finish on the same score, run these five trickier puzzles. First to shout the correct answer scores 10 points.</p>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Emoji</th><th>Category</th><th>Answer</th><th>Hint</th></tr>
+          </thead>
+          <tbody id="tbBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- RULES -->
+  <section class="panel" id="panel-rules">
+    <div class="card">
+      <h2>Scoring System</h2>
+      <p class="lead">Keep it fair, keep it fun. Points are awarded per puzzle as follows.</p>
+      <div class="pill-grid">
+        <div class="pill"><span class="val">+5</span><div class="lbl">Fully Correct</div><div class="dsc">Complete answer, no hint</div></div>
+        <div class="pill"><span class="val">+3</span><div class="lbl">Correct After Hint</div><div class="dsc">Got it after the hint was revealed</div></div>
+        <div class="pill"><span class="val">+2</span><div class="lbl">Partially Correct</div><div class="dsc">Got the gist, missed the full title</div></div>
+        <div class="pill"><span class="val">−1</span><div class="lbl">Wrong Answer</div><div class="dsc">Didn't crack it</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Rules for the Host</h2>
+      <p class="lead">Read these aloud before kicking off the game so everyone is on the same page.</p>
+      <div class="rule-grid">
+        <div class="rule-item"><div class="num">1</div><h4>Five puzzles each</h4><p>Every participant is assigned five puzzles. The host calls names in order and reveals the puzzle on screen.</p></div>
+        <div class="rule-item"><div class="num">2</div><h4>30-second timer</h4><p>The countdown <strong>auto-starts</strong> the moment a puzzle appears. The ring turns yellow at 10s and red at 5s — answer before it hits zero. Use ⏸ to pause if needed.</p></div>
+        <div class="rule-item"><div class="num">3</div><h4>Simple scoring</h4><p><strong>+5</strong> fully correct · <strong>+3</strong> correct after hint · <strong>+2</strong> partially correct · <strong>−1</strong> wrong guess.</p></div>
+        <div class="rule-item"><div class="num">4</div><h4>Hints cost points</h4><p>If a player is stuck, the host can reveal the hint — but the max score drops from <strong>+5</strong> to <strong>+3</strong>. Use hints to keep the game moving.</p></div>
+        <div class="rule-item"><div class="num">5</div><h4>No Googling</h4><p>No browser tabs, AI assistants, or whispering to colleagues off-camera. Cameras stay on if possible.</p></div>
+        <div class="rule-item"><div class="num">6</div><h4>Track on the scoreboard</h4><p>Use the +5 / +3 / +2 / −1 buttons on the Play tab after each answer. The leader is highlighted in gold automatically.</p></div>
+        <div class="rule-item"><div class="num">7</div><h4>Settle ties fairly</h4><p>If two or more players tie, switch to the Tie-Breaker tab. First correct answer wins the round.</p></div>
+        <div class="rule-item"><div class="num">8</div><h4>Keep it kind</h4><p>No mocking wrong answers. The whole point is laughing together, not at each other. Celebrate clever guesses, even when they're wrong.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>Built for Teams · Designed for screen sharing · Have fun 🎉</footer>
+</div>
+
+<script>
+// ============ PUZZLE DATA ============
+const PUZZLES = [
+  // MOVIES (10)
+  { id:1,  cat:"Movies",  emoji:"🦁 👑",         answer:"The Lion King",                  hint:"Pride Rock's young heir takes the throne." },
+  { id:2,  cat:"Movies",  emoji:"🕷️ 🧑",         answer:"Spider-Man",                     hint:"Friendly neighborhood superhero." },
+  { id:3,  cat:"Movies",  emoji:"❄️ 👸 ⛄",       answer:"Frozen",                         hint:"Let it go… let it go…" },
+  { id:4,  cat:"Movies",  emoji:"🚢 🧊 💔",       answer:"Titanic",                        hint:"Iceberg, right ahead!" },
+  { id:5,  cat:"Movies",  emoji:"🦖 🏞️",         answer:"Jurassic Park",                  hint:"Welcome to the dinosaurs." },
+  { id:6,  cat:"Movies",  emoji:"💍 👑 🌋",       answer:"The Lord of the Rings",          hint:"One ring to rule them all." },
+  { id:7,  cat:"Movies",  emoji:"🐠 🔎 👨‍👦",     answer:"Finding Nemo",                   hint:"A father searches for his clownfish son." },
+  { id:8,  cat:"Movies",  emoji:"🍫 🏭 🎫",       answer:"Charlie and the Chocolate Factory", hint:"Golden ticket, please." },
+  { id:9,  cat:"Movies",  emoji:"🦇 🌃 🦸",       answer:"Batman",                         hint:"The Dark Knight of Gotham." },
+  { id:10, cat:"Movies",  emoji:"🤖 🌍 ❤️",       answer:"WALL-E",                         hint:"A lonely robot tidies up Earth." },
+
+  // OFFICE / WORK (10)
+  { id:11, cat:"Office",  emoji:"💼 🐀 🏃",       answer:"Rat Race",                       hint:"The daily corporate hustle." },
+  { id:12, cat:"Office",  emoji:"🧊 🔨",          answer:"Ice Breaker",                    hint:"How every awkward meeting begins." },
+  { id:13, cat:"Office",  emoji:"📦 🤔 💡",       answer:"Think Outside the Box",          hint:"What every manager says on Monday." },
+  { id:14, cat:"Office",  emoji:"⏰ 💀",          answer:"Deadline",                       hint:"When the project absolutely must be done." },
+  { id:15, cat:"Office",  emoji:"📧 🔥 📧 🔥",    answer:"Inbox on Fire",                  hint:"Too many unread emails." },
+  { id:16, cat:"Office",  emoji:"🐒 💼",          answer:"Monkey Business",                hint:"Something fishy is going on around here." },
+  { id:17, cat:"Office",  emoji:"🪜 🏢",          answer:"Climbing the Corporate Ladder",  hint:"That promotion you've been chasing." },
+  { id:18, cat:"Office",  emoji:"☕ 😵 💤",       answer:"Pre-Coffee Monday",              hint:"The state of every Monday before 10 AM." },
+  { id:19, cat:"Office",  emoji:"🎯 📈 👥",       answer:"Team KPI / Quarterly Target",    hint:"What every quarter is chasing." },
+  { id:20, cat:"Office",  emoji:"🔄 🔁 🤷",       answer:"Going in Circles",               hint:"That meeting about the meeting about the meeting." },
+
+  // CRICKET / SPORTS (10)
+  { id:21, cat:"Cricket", emoji:"🏏 6️⃣ 🚀",      answer:"Sixer",                          hint:"Maximum runs off a single ball." },
+  { id:22, cat:"Cricket", emoji:"🏏 🦆 0️⃣",      answer:"Duck",                           hint:"Out without scoring a single run." },
+  { id:23, cat:"Cricket", emoji:"👑 🏏 🇮🇳",      answer:"Virat Kohli",                    hint:"The chase master of Indian batting." },
+  { id:24, cat:"Cricket", emoji:"🏆 🌍 🏏",       answer:"Cricket World Cup",              hint:"Trophy held aloft every four years." },
+  { id:25, cat:"Cricket", emoji:"🏏 🎯 🦶",       answer:"Yorker",                         hint:"A delivery aimed right at the batter's toes." },
+  { id:26, cat:"Cricket", emoji:"👨‍⚖️ ☝️ 🏏",     answer:"Howzat / Out!",                  hint:"The finger goes up — you're walking." },
+  { id:27, cat:"Cricket", emoji:"🌀 🏏 🐍",       answer:"Spin Bowling",                   hint:"Slow, turning, sneaky delivery." },
+  { id:28, cat:"Cricket", emoji:"🇮🇳 🆚 🇵🇰 🏏", answer:"India vs Pakistan",              hint:"The biggest rivalry in world cricket." },
+  { id:29, cat:"Cricket", emoji:"🎽 🏏 ✨",       answer:"IPL (Indian Premier League)",    hint:"The glitziest T20 tournament on Earth." },
+  { id:30, cat:"Cricket", emoji:"🏏 🏃‍♂️ 🏃‍♂️ 3️⃣", answer:"Running Three / Quick Singles", hint:"Sprinting between the wickets for runs." },
+
+  // TV / TECH / PHRASES (10)
+  { id:31, cat:"TV Show",   emoji:"👑 ⚔️ 🐉",     answer:"Game of Thrones",                hint:"Battle for the Iron Throne." },
+  { id:32, cat:"TV Show",   emoji:"👨‍🔬 💊 🧪",  answer:"Breaking Bad",                   hint:"A chemistry teacher takes a dark turn." },
+  { id:33, cat:"Tech",      emoji:"📱 🍎",        answer:"iPhone / Apple",                 hint:"The bitten-fruit tech giant's flagship." },
+  { id:34, cat:"Tech",      emoji:"🐦 💬 ❌",     answer:"Twitter / X",                    hint:"Social media bird that got rebranded." },
+  { id:35, cat:"TV Show",   emoji:"🍕 🐢 🥷",     answer:"Teenage Mutant Ninja Turtles",   hint:"Pizza-loving sewer heroes." },
+  { id:36, cat:"Tech",      emoji:"☁️ 💾",        answer:"Cloud Storage",                  hint:"Where your files live now, apparently." },
+  { id:37, cat:"Phrase",    emoji:"🌧️ 🐱 🐶",     answer:"Raining Cats and Dogs",          hint:"A very heavy downpour." },
+  { id:38, cat:"Phrase",    emoji:"🍰 🚶‍♂️",     answer:"Piece of Cake / Cakewalk",       hint:"Something extremely easy." },
+  { id:39, cat:"Phrase",    emoji:"🐦 2️⃣ 🪨 1️⃣", answer:"Two Birds, One Stone",          hint:"Solving two problems at once." },
+  { id:40, cat:"Phrase",    emoji:"💡 🤯",        answer:"Eureka / Light-Bulb Moment",     hint:"That sudden brilliant idea." },
+
+  // EXTRA 10 — bringing the bank to 50
+  { id:41, cat:"Movies",    emoji:"🦈 🌊 🏖️",     answer:"Jaws",                           hint:"You're gonna need a bigger boat." },
+  { id:42, cat:"Movies",    emoji:"🌟 🎹 🌃",     answer:"La La Land",                     hint:"A jazz musician and an actress chase dreams in LA." },
+  { id:43, cat:"Movies",    emoji:"🐧 🎩 💃",     answer:"Happy Feet",                     hint:"A tap-dancing emperor penguin." },
+  { id:44, cat:"Office",    emoji:"📅 📅 📅 ❌",  answer:"Back-to-Back Meetings",          hint:"Your calendar packed solid all day." },
+  { id:45, cat:"Office",    emoji:"🔇 🎤 🤦",     answer:"You're on Mute",                 hint:"The most-said phrase on video calls." },
+  { id:46, cat:"Office",    emoji:"✂️ 💰 📉",     answer:"Budget Cuts",                    hint:"Belt-tightening across the company." },
+  { id:47, cat:"Cricket",   emoji:"🏏 🏆 🇮🇳 1️⃣9️⃣8️⃣3️⃣", answer:"1983 World Cup",      hint:"Kapil's Devils lift the trophy at Lord's." },
+  { id:48, cat:"Cricket",   emoji:"🧤 🏏 ⚡",     answer:"Wicket-keeper",                  hint:"The gloveman crouching behind the stumps." },
+  { id:49, cat:"TV Show",   emoji:"👨‍👩‍👧‍👦 ☕ 🛋️", answer:"Friends",                     hint:"Six pals hanging out at Central Perk." },
+  { id:50, cat:"Tech",      emoji:"🎮 🍄 👑",     answer:"Super Mario",                    hint:"Plumber on a quest to rescue the princess." }
+];
+
+const TIEBREAKERS = [
+  { id:"T1", cat:"Movies",  emoji:"🤠 🦴 🏛️",   answer:"Indiana Jones",         hint:"Whip-cracking archaeologist." },
+  { id:"T2", cat:"Movies",  emoji:"🧙‍♂️ ⚡ 🦉", answer:"Harry Potter",          hint:"The boy who lived." },
+  { id:"T3", cat:"Movies",  emoji:"🦸‍♂️ 🛡️ 🇺🇸", answer:"Captain America",     hint:"Star-spangled Avenger." },
+  { id:"T4", cat:"Cricket", emoji:"🏏 💥 🇮🇳 🏆 2️⃣0️⃣1️⃣1️⃣", answer:"India's 2011 World Cup Win", hint:"Dhoni finishes off in style — a magnificent strike into the crowd." },
+  { id:"T5", cat:"Phrase",  emoji:"🐘 🚪 🏠",   answer:"Elephant in the Room",  hint:"The big issue everyone is pretending isn't there." }
+];
+
+// ============ STATE ============
+let state = {
+  numPlayers: 10,
+  names: Array(10).fill(""),
+  assignments: [],   // [{name, puzzleIds:[a,b,c]}]
+  scores: [],
+  flatQueue: [],     // [{playerIndex, puzzleId, questionNumber}]
+  currentIndex: 0,
+};
+
+const DEMO_NAMES = ["Aarav","Priya","Karthik","Meera","Rohan","Sanjana","Vikram","Divya","Arjun","Anika","Ishaan","Sneha","Aditya","Pooja","Rahul"];
+
+// ============ DOM REFS ============
+const $ = (id)=>document.getElementById(id);
+const tabs = document.querySelectorAll(".tab");
+const panels = document.querySelectorAll(".panel");
+
+// ============ TABS ============
+tabs.forEach(t=>{
+  t.addEventListener("click",()=>{
+    tabs.forEach(x=>x.classList.remove("active"));
+    panels.forEach(p=>p.classList.remove("active"));
+    t.classList.add("active");
+    $(`panel-${t.dataset.tab}`).classList.add("active");
+    if(t.dataset.tab === "bank") renderBank();
+    if(t.dataset.tab === "tiebreak") renderTieBreak();
+    if(t.dataset.tab === "play") renderPlay();
+  });
+});
+
+// ============ SETUP ============
+function renderNameFields(){
+  const grid = $("namesGrid");
+  grid.innerHTML = "";
+  for(let i=0; i<state.numPlayers; i++){
+    const div = document.createElement("div");
+    div.className = "name-field";
+    div.innerHTML = `
+      <div class="name-num">${i+1}</div>
+      <input type="text" placeholder="Player ${i+1} name" value="${state.names[i] || ""}" data-idx="${i}" />
+    `;
+    grid.appendChild(div);
+  }
+  grid.querySelectorAll("input").forEach(inp=>{
+    inp.addEventListener("input", e=>{
+      state.names[parseInt(e.target.dataset.idx)] = e.target.value;
+    });
+  });
+}
+
+$("numPlayers").addEventListener("input", e=>{
+  let v = parseInt(e.target.value)||0;
+  if(v < 2) v = 2; if(v > 20) v = 20;
+  state.numPlayers = v;
+  // resize names array preserving entries
+  const next = Array(v).fill("");
+  for(let i=0;i<Math.min(v, state.names.length);i++) next[i] = state.names[i];
+  state.names = next;
+  renderNameFields();
+});
+
+$("fillDemo").addEventListener("click", ()=>{
+  for(let i=0;i<state.numPlayers;i++){
+    state.names[i] = DEMO_NAMES[i % DEMO_NAMES.length];
+  }
+  renderNameFields();
+});
+
+// ============ ASSIGN PUZZLES ============
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function assignPuzzles(){
+  const ids = PUZZLES.map(p=>p.id);
+  // Each player gets 5 puzzles. With 50 puzzles in the bank, up to 10 players can play with zero repeats.
+  const QUESTIONS_PER_PLAYER = 5;
+  const totalNeeded = state.numPlayers * QUESTIONS_PER_PLAYER;
+  let pool = shuffle(ids);
+  if(totalNeeded > pool.length){
+    // Too many players for unique puzzles — warn the host and extend pool with a fresh shuffle.
+    alert(`Heads up: ${state.numPlayers} players × ${QUESTIONS_PER_PLAYER} = ${totalNeeded} questions, but only ${pool.length} unique puzzles exist. Some puzzles will repeat across players.`);
+    while(pool.length < totalNeeded){
+      pool = pool.concat(shuffle(ids));
+    }
+  }
+  state.assignments = [];
+  state.flatQueue = [];
+  let cursor = 0;
+  for(let i=0;i<state.numPlayers;i++){
+    const playerName = state.names[i] || `Player ${i+1}`;
+    const taken = new Set();
+    const myIds = [];
+    while(myIds.length < QUESTIONS_PER_PLAYER && cursor < pool.length){
+      const pid = pool[cursor++];
+      if(!taken.has(pid)){
+        taken.add(pid);
+        myIds.push(pid);
+      }
+    }
+    state.assignments.push({ name: playerName, puzzleIds: myIds });
+    myIds.forEach((pid, qIdx)=>{
+      state.flatQueue.push({ playerIndex: i, puzzleId: pid, qNum: qIdx+1 });
+    });
+  }
+  state.scores = state.assignments.map(()=>0);
+  state.currentIndex = 0;
+}
+
+$("startGame").addEventListener("click", ()=>{
+  // ensure all names have value
+  for(let i=0;i<state.numPlayers;i++){
+    if(!state.names[i] || !state.names[i].trim()){
+      state.names[i] = `Player ${i+1}`;
+    }
+  }
+  assignPuzzles();
+  resetTimer();
+  // switch to play tab
+  tabs.forEach(x=>x.classList.remove("active"));
+  panels.forEach(p=>p.classList.remove("active"));
+  document.querySelector('.tab[data-tab="play"]').classList.add("active");
+  $("panel-play").classList.add("active");
+  renderPlay();
+});
+
+$("reshuffle").addEventListener("click", ()=>{
+  if(state.assignments.length){
+    assignPuzzles();
+    alert("Puzzles reshuffled! Scores reset.");
+  } else {
+    alert("Set up players first, then click Start Game.");
+  }
+});
+
+// ============ PLAY VIEW ============
+function getPuzzleById(id){ return PUZZLES.find(p=>p.id===id); }
+
+function renderPlay(){
+  if(!state.flatQueue.length){
+    $("playEmpty").style.display = "block";
+    $("playLive").style.display = "none";
+    return;
+  }
+  $("playEmpty").style.display = "none";
+  $("playLive").style.display = "block";
+
+  const cur = state.flatQueue[state.currentIndex];
+  const player = state.assignments[cur.playerIndex];
+  const puzzle = getPuzzleById(cur.puzzleId);
+
+  $("currentPlayerTag").textContent = `🎙️ ${player.name}`;
+  $("qCount").textContent = `Question ${cur.qNum} of 5 · Puzzle ${state.currentIndex+1} of ${state.flatQueue.length}`;
+  $("puzzleCat").textContent = puzzle.cat;
+  $("puzzleEmoji").textContent = puzzle.emoji;
+  $("puzzleHint").innerHTML = `<strong style="color:var(--mint)">Hint:</strong> ${puzzle.hint}`;
+  $("puzzleAnswer").innerHTML = `<span style="font-size:13px; letter-spacing:0.14em; text-transform:uppercase;">Answer</span><strong>${puzzle.answer}</strong>`;
+  $("puzzleHint").classList.remove("show");
+  $("puzzleAnswer").classList.remove("show");
+
+  renderScoreboard();
+  renderAssignmentsList();
+  resetTimer();
+  startTimer();
+}
+
+$("btnHint").addEventListener("click", ()=> $("puzzleHint").classList.toggle("show"));
+$("btnAnswer").addEventListener("click", ()=> $("puzzleAnswer").classList.toggle("show"));
+
+$("btnStartTimer").addEventListener("click", startTimer);
+$("btnPauseTimer").addEventListener("click", pauseTimer);
+$("btnResetTimer").addEventListener("click", resetTimer);
+
+$("nextPuzzle").addEventListener("click", ()=>{
+  if(state.currentIndex < state.flatQueue.length - 1){
+    state.currentIndex++;
+    renderPlay();
+  } else {
+    alert("🎉 That's the last puzzle! Check the scoreboard for the winner — or head to Tie-Breakers if there's a tie.");
+  }
+});
+$("prevPuzzle").addEventListener("click", ()=>{
+  if(state.currentIndex > 0){ state.currentIndex--; renderPlay(); }
+});
+
+function renderScoreboard(){
+  const list = $("scoreboardList");
+  list.innerHTML = "";
+  // determine leader
+  const maxScore = Math.max(...state.scores);
+  state.assignments.forEach((pl, i)=>{
+    const isLeader = state.scores[i] === maxScore && maxScore !== 0;
+    const row = document.createElement("div");
+    row.className = "score-row" + (isLeader ? " leader" : "");
+    row.innerHTML = `
+      <div class="who">${pl.name}<small>${pl.puzzleIds.map(id=>`#${id}`).join(" · ")}</small></div>
+      <button class="pmbtn minus" data-i="${i}" data-d="-1" title="Wrong answer">−1</button>
+      <div class="pts">${state.scores[i]}</div>
+      <button class="pmbtn partial" data-i="${i}" data-d="2" title="Partially correct">+2</button>
+      <button class="pmbtn hint" data-i="${i}" data-d="3" title="Correct after hint">+3</button>
+      <button class="pmbtn plus" data-i="${i}" data-d="5" title="Fully correct">+5</button>
+    `;
+    list.appendChild(row);
+  });
+  list.querySelectorAll(".pmbtn").forEach(b=>{
+    b.addEventListener("click", e=>{
+      const i = parseInt(e.target.dataset.i);
+      const d = parseInt(e.target.dataset.d);
+      state.scores[i] = state.scores[i] + d;
+      renderScoreboard();
+    });
+  });
+}
+
+function renderAssignmentsList(){
+  const wrap = $("assignmentsList");
+  wrap.innerHTML = "";
+  state.assignments.forEach((pl, i)=>{
+    const row = document.createElement("div");
+    row.className = "pl-row";
+    row.innerHTML = `<div class="pl-name">${i+1}. ${pl.name}</div><div class="pl-qs">#${pl.puzzleIds.join(", #")}</div>`;
+    wrap.appendChild(row);
+  });
+}
+
+$("resetScores").addEventListener("click", ()=>{
+  if(confirm("Reset all scores to zero?")){
+    state.scores = state.assignments.map(()=>0);
+    renderScoreboard();
+  }
+});
+
+// ============ TIMER ============
+const TIMER_DURATION = 30;
+const RING_CIRCUMFERENCE = 220; // 2 * PI * 35 ≈ 220
+let timerState = {
+  remaining: TIMER_DURATION,
+  intervalId: null,
+  running: false
+};
+
+function updateTimerVisual(){
+  const num = $("timerNum");
+  const ring = $("timerProgress");
+  num.textContent = timerState.remaining;
+  const progress = timerState.remaining / TIMER_DURATION;
+  ring.style.strokeDashoffset = RING_CIRCUMFERENCE * (1 - progress);
+
+  ring.classList.remove("warn", "danger");
+  num.classList.remove("danger");
+  if(timerState.remaining <= 5 && timerState.remaining > 0){
+    ring.classList.add("danger");
+    num.classList.add("danger");
+  } else if(timerState.remaining <= 10){
+    ring.classList.add("warn");
+  }
+}
+
+function startTimer(){
+  if(timerState.running) return;
+  if(timerState.remaining <= 0) timerState.remaining = TIMER_DURATION;
+  timerState.running = true;
+  timerState.intervalId = setInterval(()=>{
+    timerState.remaining--;
+    updateTimerVisual();
+    if(timerState.remaining <= 0){
+      pauseTimer();
+      // gentle ping — three short flashes
+      const stage = $("stage");
+      stage.animate(
+        [{ boxShadow: "6px 6px 0 var(--coral)" },
+         { boxShadow: "0 0 0 6px var(--coral)" },
+         { boxShadow: "6px 6px 0 var(--coral)" }],
+        { duration: 600, iterations: 3 }
+      );
+    }
+  }, 1000);
+}
+
+function pauseTimer(){
+  timerState.running = false;
+  if(timerState.intervalId){
+    clearInterval(timerState.intervalId);
+    timerState.intervalId = null;
+  }
+}
+
+function resetTimer(){
+  pauseTimer();
+  timerState.remaining = TIMER_DURATION;
+  updateTimerVisual();
+}
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  // safe to bind after DOM ready, but elements exist at script-run time too
+});
+
+// ============ PUZZLE BANK ============
+function renderBank(){
+  const body = $("bankBody");
+  body.innerHTML = "";
+  PUZZLES.forEach(p=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><strong>#${p.id}</strong></td>
+      <td class="emoji-cell">${p.emoji}</td>
+      <td class="cat-cell">${p.cat}</td>
+      <td class="ans-cell"><span class="hidden-ans" data-id="${p.id}">${p.answer}</span> <span class="reveal-toggle" data-toggle="${p.id}">show</span></td>
+      <td class="hint-cell">${p.hint}</td>
+    `;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll(".reveal-toggle").forEach(t=>{
+    t.addEventListener("click", e=>{
+      const id = e.target.dataset.toggle;
+      const ans = body.querySelector(`.hidden-ans[data-id="${id}"]`);
+      ans.classList.toggle("revealed");
+      e.target.textContent = ans.classList.contains("revealed") ? "hide" : "show";
+    });
+  });
+}
+$("revealAll").addEventListener("click", ()=>{
+  document.querySelectorAll("#bankBody .hidden-ans").forEach(el=>el.classList.add("revealed"));
+  document.querySelectorAll("#bankBody .reveal-toggle").forEach(el=>el.textContent="hide");
+});
+$("hideAll").addEventListener("click", ()=>{
+  document.querySelectorAll("#bankBody .hidden-ans").forEach(el=>el.classList.remove("revealed"));
+  document.querySelectorAll("#bankBody .reveal-toggle").forEach(el=>el.textContent="show");
+});
+$("printBank").addEventListener("click", ()=> window.print());
+
+// ============ TIE-BREAKERS ============
+function renderTieBreak(){
+  const body = $("tbBody");
+  body.innerHTML = "";
+  TIEBREAKERS.forEach(p=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><strong>${p.id}</strong></td>
+      <td class="emoji-cell">${p.emoji}</td>
+      <td class="cat-cell">${p.cat}</td>
+      <td class="ans-cell">${p.answer}</td>
+      <td class="hint-cell">${p.hint}</td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+// ============ INIT ============
+renderNameFields();
+renderBank();
+renderTieBreak();
+</script>
+</body>
+</html>
